@@ -51,7 +51,7 @@ if uploaded_file:
                                 tempo_final = resultado_split[0]
                                 return primeiro_tempo, tempo_final
                             else:
-                                return None, None
+                                return primeiro_tempo, tempo_final
 
                         # Criando listas vazias para armazenar os valores extraídos
                         primeiro_tempo_list = []
