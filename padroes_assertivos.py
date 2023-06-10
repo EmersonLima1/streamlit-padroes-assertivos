@@ -28,7 +28,9 @@ if uploaded_file:
                     continue
                 for num_total_partidas in num_total_partidas_options:
                     for num_conjuntos in num_conjuntos_options:
-
+                        if primeiro_tempo is None and tempo_final is None:
+                            continue
+                            
                         # Tratando o arquivo Excel e obtendo o DataFrame tratado
                         #df = pd.read_excel(uploaded_file, sheet_name=sheet_name)
                         df.columns = df.iloc[0]
