@@ -15,16 +15,6 @@ if uploaded_file:
     tempo_final_options = ['0x0', '0x1', '0x2', '0x3', '0x4', '0x5', '1x0', '1x1', '1x2', '1x3', '1x4', '1x5', '2x1', '2x2', '2x3', '2x4', '2x5', '3x1', '3x2', '3x3', '3x4', '3x5', '4x1', '4x2', '4x3', '4x4', '4x5', '5x1', '5x2', '5x3', '5x4', '5x5']
     num_total_partidas_options = list(range(1, 51))
     num_conjuntos_options = [1, 2, 3, 4, 5]
-    
-    # Função para extrair os resultados do DataFrame
-    def extrair_resultados(resultado):
-        if resultado != '?\n\n?':
-            resultado_split = resultado.split('\n\n')
-            primeiro_tempo = resultado_split[1]
-            tempo_final = resultado_split[0]
-            return primeiro_tempo, tempo_final
-        else:
-            return None, None
 
     # Dicionário para armazenar os resultados das combinações
     resultados = {}
