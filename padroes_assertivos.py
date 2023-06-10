@@ -214,7 +214,12 @@ if uploaded_file:
                         df['Total AN'] = df.iloc[:, 1+4*num_conjuntos:1+5*num_conjuntos].sum(axis=1)
 
                         # Adicionar a porcentagem em relação ao número total de chaves
-                        total_percent = "{:.2%}".format(1 / num_total)
+                        #total_percent = "{:.2%}".format(1 / num_total)
+                        
+                        if num_total > 0:
+                            total_percent = "{:.2%}".format(1 / num_total)
+                        else:
+                            total_percent = "N/A"
 
                         # Aplicar formatação apenas a partir da segunda coluna em diante
                         df.iloc[:, 1:] = df.iloc[:, 1:].applymap(lambda x: str(x) + f'/{num_total} ({float(x)/num_total:.2%})' if isinstance(x, int) else x)
