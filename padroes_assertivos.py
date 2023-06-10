@@ -18,16 +18,19 @@ if uploaded_file:
 
     # Dicionário para armazenar os resultados das combinações
     resultados = {}
-
-    for primeiro_tempo in primeiro_tempo_options:
-        for tempo_final in tempo_final_options:
-            if primeiro_tempo is None and tempo_final is None:
-                continue
-            for num_total_partidas in num_total_partidas_options:
-                for num_conjuntos in num_conjuntos_options:
+    
+    for sheet_name in sheet_names:
+        df = pd.read_excel(uploaded_file, sheet_name=sheet_name)
+        
+        for primeiro_tempo in primeiro_tempo_options:
+            for tempo_final in tempo_final_options:
+                if primeiro_tempo is None and tempo_final is None:
+                    continue
+                for num_total_partidas in num_total_partidas_options:
+                    for num_conjuntos in num_conjuntos_options:
 
                     # Tratando o arquivo Excel e obtendo o DataFrame tratado
-                    df = pd.read_excel(uploaded_file, sheet_name=sheet_name)
+                    #df = pd.read_excel(uploaded_file, sheet_name=sheet_name)
                     df.columns = df.iloc[0]
                     df = df[1:].reset_index(drop=True)
                     colunas_para_manter = df.columns[:-3]
