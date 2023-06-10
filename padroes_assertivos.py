@@ -22,16 +22,4 @@ if uploaded_file:
     for sheet_name in sheet_names:
         df = pd.read_excel(uploaded_file, sheet_name=sheet_name)
         
-        for primeiro_tempo in primeiro_tempo_options:
-            for tempo_final in tempo_final_options:
-                if primeiro_tempo is None and tempo_final is None:
-                    continue
-                for num_total_partidas in num_total_partidas_options:
-                    for num_conjuntos in num_conjuntos_options:
-                        if primeiro_tempo is None and tempo_final is None:
-                            continue
-                            
-                        st.write(primeiro_tempo)
-                        st.write(tempo_final)
-                        st.write(num_total_partidas)
-                        st.write(num_conjuntos)
+        st.write(df)
