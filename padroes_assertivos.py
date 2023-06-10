@@ -114,7 +114,7 @@ if uploaded_file:
                             return resultado
 
                         # Chamada da função para análise das partidas
-                        resultado_analise = analisar_partidas(df1, primeiro_tempo1, tempo_final1, num_total_partidas, num_conjuntos)
+                        resultado_analise = analisar_partidas(df1, primeiro_tempo, tempo_final, num_total_partidas, num_conjuntos)
 
                         def criar_novo_dicionario(resultado_analise, num_total_partidas):
                             novo_dicionario = {}
@@ -136,7 +136,7 @@ if uploaded_file:
 
                         #num_conjuntos = len(dicionario[1][0])  # Número de valores em cada lista
                         # Selecionar linhas com base nas condições
-                        selecao = (df_novo['Primeiro tempo'] == primeiro_tempo1) & (df_novo['Tempo final'] == tempo_final1)
+                        selecao = (df_novo['Primeiro tempo'] == primeiro_tempo) & (df_novo['Tempo final'] == tempo_final)
                         df_selecionado = df_novo[selecao]
 
                         # Armazenar o número total de linhas selecionadas
