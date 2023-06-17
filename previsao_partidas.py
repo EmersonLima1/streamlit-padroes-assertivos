@@ -3788,7 +3788,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
 
       return novo_dataframe
 
-  informacoes_times = obter_informacoes_times(time_casa, time_fora)
+  informacoes_times = obter_informacoes_times(time_casa, time_fora, times)
 
   # Função para extrair o que está entre parênteses
   def extrair_nome(valor):
