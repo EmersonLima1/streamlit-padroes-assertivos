@@ -1,3 +1,7 @@
 pandas
+scikit-learn
+tabulate
+numpy
+datetime
 streamlit
 openpyxl
