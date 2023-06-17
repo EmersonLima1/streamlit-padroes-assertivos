@@ -27,6 +27,8 @@ from datetime import datetime
 
 import streamlit as st
 
+import math
+
 # Importando o módulo re para usar expressões regulares
 import re
 
@@ -3500,6 +3502,347 @@ def padroes_assertivos(partidas_df, data_da_partida, partidas_anteriores, multi_
     )
   
   return (df_final, df_novo)
+
+# Método do cálculo de acurácia para cada time
+
+def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
+
+  # DataFrame original com as informações das partidas
+  partidas = partidas_df
+  df_partidas, _, _ = df_completo_partidas_casa_fora(partidas)
+
+  # Data informada (no formato 'yyyy-mm-dd')
+  data_alvo = data_alvo
+
+  # Converter a data informada para o formato datetime
+  data_alvo = datetime.strptime(data_alvo, '%Y-%m-%d').date()
+
+  # Encontrar a última partida anterior à data alvo e obter a rodada correspondente
+  ultima_partida = df_partidas[df_partidas['data_partida'] < data_alvo].tail(1)
+  ultima_rodada = ultima_partida['rodada'].values[0]
+
+  # Dicionário para armazenar os dataframes separados
+  dataframes_rodadas = {}
+
+  # Criar os dataframes separados para cada rodada
+  for rodada in range(1, ultima_rodada + 1):
+      if rodada == ultima_rodada:
+          # Considerar apenas as partidas da última rodada que são anteriores à data alvo
+          df_rodada = df_partidas[(df_partidas['rodada'] == rodada) & (df_partidas['data_partida'] < data_alvo)]
+      else:
+          # Considerar todas as partidas das rodadas anteriores
+          df_rodada = df_partidas[df_partidas['rodada'] == rodada]
+
+      dataframes_rodadas[rodada] = df_rodada
+
+  def codificar_variaveis(dataframes):
+      times_casa = set()
+      times_fora = set()
+      arbitros = set()
+
+      # Coletar todos os times e árbitros presentes nos dataframes
+      for _, dataframe in dataframes.items():
+          times_casa.update(dataframe['time_casa'].unique())
+          times_fora.update(dataframe['time_fora'].unique())
+          arbitros.update(dataframe['arbitro'].unique())
+
+      # Criar um único conjunto de times e árbitros
+      todos_os_times = sorted(list(times_casa.union(times_fora)))
+      todos_os_arbitros = sorted(list(arbitros))
+
+      # Criar os codificadores e ajustá-los aos times e árbitros
+      le_time = LabelEncoder()
+      le_arbitro = LabelEncoder()
+      le_time.fit(todos_os_times)
+      le_arbitro.fit(todos_os_arbitros)
+
+      # Aplicar a codificação a cada dataframe
+      dataframes_codificados = {}
+      for rodada, dataframe in dataframes.items():
+          dataframe_codificado = dataframe.copy()
+          dataframe_codificado['time_casa'] = le_time.transform(dataframe['time_casa'])
+          dataframe_codificado['time_fora'] = le_time.transform(dataframe['time_fora'])
+          dataframe_codificado['arbitro'] = le_arbitro.transform(dataframe['arbitro'])
+          dataframes_codificados[rodada] = dataframe_codificado
+
+      return dataframes_codificados, le_time, le_arbitro
+
+  def criar_dataframes_rodadas(dataframes_rodadas_codificados, ultima_rodada):
+      dataframes_rodadas = {}
+
+      for rodada in range(1, ultima_rodada + 1):
+          dataframes_rodadas[rodada] = dataframes_rodadas_codificados[rodada]
+
+      return dataframes_rodadas
+
+  # Exemplo de uso em diferentes dataframes_rodadas
+  dataframes_rodadas_codificados, le_time, le_arbitro = codificar_variaveis(dataframes_rodadas)
+  dataframes_rodadas = criar_dataframes_rodadas(dataframes_rodadas_codificados, ultima_rodada)
+
+  # Inicializa o modelo RandomForestClassifier para previsão das partidas
+  rfc = RandomForestClassifier(n_estimators=100, max_depth=30, min_samples_split=5, min_samples_leaf=1, max_features='auto', random_state=42)
+  multi_target_rfc = MultiOutputClassifier(rfc, n_jobs=-1)
+
+  # PREVISÕES 
+
+  columns_partidas = None
+  partidas_data = []
+
+  # Loop para percorrer as rodadas
+  for rodada in range(1, ultima_rodada + 1):
+      # Filtra os dataframes das rodadas anteriores até a rodada atual
+      dataframes_rodadas_acumuladas = [dataframes_rodadas[rodada_atual] for rodada_atual in range(1, rodada + 1)]
+
+      # Concatena os dataframes das rodadas acumuladas
+      dataframe_acumulado = pd.concat(dataframes_rodadas_acumuladas)
+
+      # Separa as variáveis de entrada (features) e as variáveis-alvo (target)
+      X = dataframe_acumulado.drop(columns=['resultado_partida', 'resultado_intervalo', 'resultado_num_gols_over_under', 'resultado_ambas_equipes_marcaram','resultado_num_cartoes_amarelos','resultado_num_cartoes_vermelhos','resultado_num_cartoes_totais','resultado_ambas_equipes_receberam_cartoes','resultado_cartoes_ambos_tempos','resultado_num_escanteios','resultado_num_cartoes_primeiro', 'resultado_num_cartoes_segundo', 'data_partida', 'rodada'])
+      y = dataframe_acumulado[['resultado_partida', 'resultado_intervalo', 'resultado_num_gols_over_under', 'resultado_ambas_equipes_marcaram','resultado_num_cartoes_amarelos','resultado_num_cartoes_vermelhos','resultado_num_cartoes_totais','resultado_ambas_equipes_receberam_cartoes','resultado_cartoes_ambos_tempos','resultado_num_escanteios','resultado_num_cartoes_primeiro', 'resultado_num_cartoes_segundo']]
+      
+      if rodada + 1 in dataframes_rodadas_codificados:
+          # Filtrar as partidas da próxima rodada para confrontos diretos
+          partidas_filtradas = dataframes_rodadas_codificados[rodada + 1].loc[
+              ((dataframes_rodadas_codificados[rodada + 1]['time_casa'] == dataframes_rodadas_codificados[rodada + 1]['time_casa']) &
+              (dataframes_rodadas_codificados[rodada + 1]['time_fora'] == dataframes_rodadas_codificados[rodada + 1]['time_fora'])) |
+              ((dataframes_rodadas_codificados[rodada + 1]['time_casa'] == dataframes_rodadas_codificados[rodada + 1]['time_fora']) &
+              (dataframes_rodadas_codificados[rodada + 1]['time_fora'] == dataframes_rodadas_codificados[rodada + 1]['time_casa']))
+          ]
+          partidas_filtradas_temp = partidas_filtradas.copy()  # Cria uma cópia das partidas filtradas
+          partidas_filtradas = partidas_filtradas.drop(
+              ['resultado_partida', 'resultado_intervalo', 'resultado_num_gols_over_under', 'resultado_ambas_equipes_marcaram',
+              'resultado_num_cartoes_amarelos', 'resultado_num_cartoes_vermelhos', 'resultado_num_cartoes_totais',
+              'resultado_ambas_equipes_receberam_cartoes', 'resultado_cartoes_ambos_tempos', 'resultado_num_escanteios',
+              'resultado_num_cartoes_primeiro', 'resultado_num_cartoes_segundo', 'data_partida', 'rodada'],
+              axis=1
+          )
+      else:
+          # Não há próxima rodada, encerra o loop
+          break
+      
+      # Treina o modelo com os dados das rodadas acumuladas
+      multi_target_rfc.fit(X, y)
+
+      # Cria um dataframe para armazenar as informações das partidas
+      if not columns_partidas:
+          # Se a lista de colunas está vazia, atualiza-a com as colunas corretas
+          columns_partidas = ['Partidas', 'Rodada'] + [f"{coluna}_Prevista" for coluna in y.columns] + [f"{coluna}_Aconteceu" for coluna in y.columns]
+
+      # Realiza as previsões para as partidas filtradas
+      previsoes = multi_target_rfc.predict(partidas_filtradas)
+
+      # Preenche a lista de dados das partidas
+      for partida, previsao in zip(partidas_filtradas_temp.index, previsoes):
+          partida_str = le_time.inverse_transform([partidas_filtradas_temp.loc[partida, 'time_casa']])[0] + ' x ' + le_time.inverse_transform([partidas_filtradas_temp.loc[partida, 'time_fora']])[0]
+          rodada_partida = rodada + 1
+          partidas_data.append([partida_str, rodada_partida] + list(previsao) + list(dataframes_rodadas[rodada + 1].loc[partida, y.columns]))
+
+      # Cria o DataFrame das partidas
+      df_partidas_previsoes = pd.DataFrame(partidas_data, columns=columns_partidas)
+  
+  # Reinicia o índice do dataframe
+  df_partidas_previsoes = df_partidas_previsoes.reset_index(drop=True)
+
+  # MÉTODO QUE CALCULA A MÉDIA DE ACURÁCIAS PARA CADA TIME PARA CADA VARIÁVEL-ALVO
+
+  def medias_acuracias(df_partidas_previsoes):
+
+    # Obter lista de times únicos
+    times = df_partidas_previsoes['Partidas'].str.split(' x ', expand=True).stack().unique()
+
+    # Inicializar dicionário para armazenar as médias de acurácia
+    medias_acuracia = {}
+
+    # Calcular média de acurácia para cada time e cada variável-alvo
+    for time in times:
+        # Filtrar as partidas em que o time está presente
+        filtro_time = df_partidas_previsoes['Partidas'].str.contains(time)
+        partidas_time = df_partidas_previsoes[filtro_time]
+
+        # Calcular a média de acurácia para cada variável-alvo
+        medias_acuracia_time = []
+        previsto_cols = df_partidas_previsoes.columns[2:14]  # Colunas correspondentes às previsões 
+        aconteceu_cols = df_partidas_previsoes.columns[14:26]  # Colunas correspondentes ao que de fato aconteceu nas partidas
+        for coluna_prevista_1, coluna_aconteceu_1 in zip(previsto_cols, aconteceu_cols):
+            acuracias = []
+            for _, partida in partidas_time.iterrows():
+                acuracia_partida = 0
+                acertos = 0
+                total = 0
+                for previsto_1, aconteceu_1 in zip(partida[coluna_prevista_1], partida[coluna_aconteceu_1]):
+                    if previsto_1 == aconteceu_1:
+                        acertos += 1
+                    total += 1
+                    acuracia_partida += acertos / total
+                if total > 0:
+                    acuracia_partida /= total
+                acuracias.append(acuracia_partida)
+            if acuracias:
+                media_acuracia = sum(acuracias) / len(acuracias)
+            else:
+                media_acuracia = 0
+            medias_acuracia_time.append(media_acuracia)
+
+        medias_acuracia[time] = medias_acuracia_time 
+
+    # Criar lista de dicionários com nome do time e médias de acurácia
+    lista_acuracias = []
+    for time, medias in medias_acuracia.items():
+        dicionario_acuracia = {'Times': time}
+        for i, coluna1 in enumerate(previsto_cols):
+            dicionario_acuracia[f'Previsões ({coluna1})'] = medias[i]
+        lista_acuracias.append(dicionario_acuracia)
+
+    # Criar DataFrame com as colunas adequadas
+    df_acuracias = pd.DataFrame(lista_acuracias)
+
+    # Definir as colunas
+    colunas = ['Times'] + [f'Previsões ({coluna1})' for coluna1 in previsto_cols]
+    
+    # Ordenar o DataFrame pelas maiores acurácias
+    df_acuracias = df_acuracias.sort_values(by=colunas[1:], ascending=False)
+
+    # Resetar o índice do DataFrame
+    df_acuracias = df_acuracias.reset_index(drop=True)
+
+    return df_acuracias
+
+  df_acuracias = medias_acuracias(df_partidas_previsoes)
+
+  def atualizar_nomes_dataframe(df):
+      categorias = [
+          'Resultado da Partida',
+          'Resultado do Intervalo',
+          'Resultado Nº de Gols',
+          'Resultado Ambas Equipes Marcaram',
+          'Resultado Nº de Cartões Amarelos',
+          'Resultado Nº de Cartões Vermelhos',
+          'Resultado Nº de Cartões Totais',
+          'Resultado Ambas Equipes Receberam Cartões',
+          'Resultado Cartões Ambos os tempos',
+          'Resultado Nº de Escanteios',
+          'Resultado Nº Cartões no Primeiro Tempo',
+          'Resultado Nº Cartões no Segundo Tempo'
+      ]
+
+      colunas_originais = df.columns.tolist()
+      novos_nomes = [colunas_originais[0]]  # Mantém o nome da primeira coluna
+
+      for i in range(1, len(colunas_originais)):
+          categoria_idx = (i - 1) // 1
+          nome_anterior = re.sub(r'\(.*\)', '', colunas_originais[i]).strip()
+          novo_nome = f'{nome_anterior} ({categorias[categoria_idx]})'
+          novos_nomes.append(novo_nome)
+
+      df.columns = novos_nomes
+
+      return df
+
+  df_medias_final = atualizar_nomes_dataframe(df_acuracias)   
+
+  def arredondar_para_cima(df):
+      # Copiar o DataFrame original
+      df_arredondado = df.copy()
+
+      # Iterar sobre as colunas a partir da segunda coluna em diante
+      for coluna in df_arredondado.columns[1:]:
+          # Arredondar cada valor float para cima com duas casas decimais
+          df_arredondado[coluna] = df_arredondado[coluna].apply(lambda x: math.ceil(x * 100) / 100 if isinstance(x, float) else x)
+
+      return df_arredondado
+    
+  df_final = arredondar_para_cima(df_medias_final)
+
+  def transformar_em_porcentagem(df):
+      # Copiar o DataFrame original
+      df_transformado = df.copy()
+
+      # Iterar sobre as colunas a partir da segunda coluna em diante
+      for coluna in df_transformado.columns[1:]:
+          # Multiplicar cada valor float por 100 e adicionar o símbolo de porcentagem
+          df_transformado[coluna] = df_transformado[coluna].apply(lambda x: f"{x*100:.0f}%" if isinstance(x, float) else x)
+
+      return df_transformado
+
+  times = transformar_em_porcentagem(df_final)
+
+  # Função para criar o novo dataframe com as informações dos times
+  def obter_informacoes_times(time_casa, time_fora, times):
+      # Filtrar as informações dos times de casa e fora
+      info_time_casa = times[times['Times'] == time_casa]
+      info_time_fora = times[times['Times'] == time_fora]
+
+      # Criar o novo dataframe
+      novo_dataframe = pd.DataFrame(columns=['Variáveis-alvo', f'Acurácia do {time_casa}', f'Acurácia do {time_fora}', 'Média das acurácias'])
+
+      # Preencher as colunas do novo dataframe
+      novo_dataframe['Variáveis-alvo'] = times.columns[1:]
+      novo_dataframe[f'Acurácia do {time_casa}'] = info_time_casa.values[0][1:]
+      novo_dataframe[f'Acurácia do {time_fora}'] = info_time_fora.values[0][1:]
+
+      # Calcular a média das acurácias
+      acuracia_time_casa = [float(valor.rstrip('%')) for valor in info_time_casa.values[0][1:]]
+      acuracia_time_fora = [float(valor.rstrip('%')) for valor in info_time_fora.values[0][1:]]
+      media_acuracias = [(casa + fora) / 2 for casa, fora in zip(acuracia_time_casa, acuracia_time_fora)]
+      novo_dataframe['Média das acurácias'] = [str(valor) + '%' for valor in media_acuracias]
+
+      return novo_dataframe
+
+  informacoes_times = obter_informacoes_times(time_casa, time_fora)
+
+  # Função para extrair o que está entre parênteses
+  def extrair_nome(valor):
+      match = re.search(r'\((.*?)\)', valor)
+      if match:
+          return match.group(1)
+      return valor
+
+  # Aplicar a função para extrair o nome
+  informacoes_times['Variáveis-alvo'] = informacoes_times['Variáveis-alvo'].apply(extrair_nome)
+
+  # Define um estilo para a tabela usando os seletores e propriedades do CSS
+  informacoes_times = (informacoes_times.style
+        .set_table_styles([{
+            'selector': 'caption', # Seletor CSS para o título da tabela
+            'props': [
+                ('color', '#FFFFFF'),
+                ('font-size', '18px'),
+                ('font-style', 'normal'),
+                ('font-weight', 'bold'),
+                ('text-align', 'center'),
+                ('background-color', '#126e51'),
+                ('border', '1px solid gray')
+            ]
+        },
+        {
+            'selector': 'th', # Seletor CSS para as células do cabeçalho
+            'props': [
+                ('background-color', '#126e51'),
+                ('color', 'black'),
+                ('font-size', '15px'),
+                ('font-weight', 'bold'),
+                ('text-align', 'center'),
+                ('border', '1px solid gray'),
+                ('white-space', 'pre-wrap')
+            ]
+        },
+        {
+            'selector': 'td', # Seletor CSS para as células de dados
+            'props': [
+                ('background-color', '#283734'),
+                ('color', 'white'),
+                ('font-size', '15px'),
+                ('font-weight', 'normal'),
+                ('text-align', 'center'),
+                ('border', '1px solid gray'),
+                ('white-space', 'pre-wrap')
+            ]
+        },
+        ])
+        
+    )
+  
+  return informacoes_times
     
 # Interação com o usuário
 
@@ -3576,7 +3919,8 @@ def main():
                       if considerar_todos == True:
                         tabela, legenda = gerar_tabela(time_casa_widget, time_fora_widget, arbitro_widget, multi_target_rfc, le, partidas_anteriores, acuracia)
                         df_tabela, df_legenda, df_casa, df_fora, df_res, df_inf = estilizar_df(df_concatenado_time_casa, df_concatenado_time_fora, df_resultados_confrontos_diretos, df_info_confrontos_diretos, time_casa_widget, time_fora_widget, tabela, legenda)
-                        df_final, df_novo = padroes_assertivos(partidas_df, data_da_partida, partidas_anteriores, multi_target_rfc, le, y_test)
+                        _, df_novo = padroes_assertivos(partidas_df, data_da_partida, partidas_anteriores, multi_target_rfc, le, y_test)
+                        informacoes_times = times_acuracia(data_da_partida, time_casa_widget, time_fora_widget, partidas_df)
                         st.header('**Previsões para a partida**')
                         st.subheader(f"{time_casa_widget} x {time_fora_widget}")
                         st.write(f'**Árbitro: {arbitro_widget}**')
@@ -3585,6 +3929,8 @@ def main():
                         st.table(df_tabela)
                         st.write('**Legenda dos Padrões**')
                         st.table(df_legenda)
+                        st.write('**Acurácia dos times**')
+                        st.table(informacoes_times)
                         st.write('**Últimos resultados do {}**'.format(time_casa_widget))
                         st.table(df_casa)
                         st.write('**Últimos resultados do {}**'.format(time_fora_widget))
@@ -3601,12 +3947,15 @@ def main():
                         df = padroes_usuario(time_casa_widget, time_fora_widget, arbitro_widget, multi_target_rfc, le, partidas_anteriores, acuracia, padroes_selecionados)
                         tabela, legenda = gerar_tabela(time_casa_widget, time_fora_widget, arbitro_widget, multi_target_rfc, le, partidas_anteriores, acuracia)
                         df_tabela, df_legenda, df_casa, df_fora, df_res, df_inf = estilizar_df(df_concatenado_time_casa, df_concatenado_time_fora, df_resultados_confrontos_diretos, df_info_confrontos_diretos, time_casa_widget, time_fora_widget, tabela, legenda)
-                        df_final, df_novo = padroes_assertivos(partidas_df, data_da_partida, partidas_anteriores, multi_target_rfc, le, y_test)
+                        _, df_novo = padroes_assertivos(partidas_df, data_da_partida, partidas_anteriores, multi_target_rfc, le, y_test)
+                        informacoes_times = times_acuracia(data_da_partida, time_casa_widget, time_fora_widget, partidas_df)
                         st.header('**Previsões para a partida**')
                         st.subheader(f"{time_casa_widget} x {time_fora_widget}")
                         st.write(f'**Árbitro: {arbitro_widget}**')
                         st.write(f'**Data da partida: {data_widget}**')
                         
+                        st.write('**Acurácia dos times**')
+                        st.table(informacoes_times)
                         st.table(df)
                         st.write('Últimos resultados do {}'.format(time_casa_widget))
                         st.write('**Últimos resultados do {}**'.format(time_casa_widget))
