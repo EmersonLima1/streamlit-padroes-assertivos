@@ -3933,7 +3933,7 @@ def main():
                         st.header('**Previsões para a partida**')
                         st.subheader(f"{time_casa_widget} x {time_fora_widget}")
                         st.write(f'**Árbitro: {arbitro_widget}**')
-                        st.write(f'**Data da partida: {data_da_partida}**')
+                        st.write(f'**Data da partida: {data_widget}**')
 
                         st.table(df_tabela)
                         st.write('**Legenda dos Padrões**')
