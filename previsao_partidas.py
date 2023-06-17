@@ -3766,7 +3766,9 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
 
   times = transformar_em_porcentagem(df_final)
 
-  # Função para criar o novo dataframe com as informações dos times
+  return times
+
+"""  # Função para criar o novo dataframe com as informações dos times
   def obter_informacoes_times(time_casa, time_fora, times):
       # Filtrar as informações dos times de casa e fora
       info_time_casa = times[times['Times'] == time_casa]
@@ -3842,7 +3844,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
         
     )
   
-  return informacoes_times
+  return informacoes_times"""
     
 # Interação com o usuário
 
