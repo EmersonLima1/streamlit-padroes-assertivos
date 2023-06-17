@@ -3900,8 +3900,14 @@ def main():
                 st.error('**O time visitante não pode ser o mesmo que o time mandante!**')
             else:
                 try:
+                    # Verifique se a data selecionada é maior que a data máxima no DataFrame
+                    if data_widget > partidas_df['data'].max():
+                        data_da_partida = partidas_df['data'].max().strftime("%Y-%m-%d")
+                    else:
+                        data_da_partida = data_widget.strftime("%Y-%m-%d")
+
                     # Converte a data para o formato desejado
-                    data_da_partida = data_widget.strftime("%Y-%m-%d")
+                    #data_da_partida = data_widget.strftime("%Y-%m-%d")
 
                     # gerando um dataframe com todas as partidas antes da data passada
                     partidas_anteriores = partidas_df[partidas_df['data'] < data_da_partida]
