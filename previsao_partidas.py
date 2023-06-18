@@ -3843,7 +3843,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
     )
   
   #return informacoes_times
-  return times
+  return df_partidas_previsoes
     
 # Interação com o usuário
 
