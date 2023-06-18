@@ -3521,8 +3521,6 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
   ultima_partida = df_partidas[df_partidas['data_partida'] < data_alvo].tail(1)
   ultima_rodada = ultima_partida['rodada'].values[0]
 
-  print(ultima_rodada)
-
   # Dicionário para armazenar os dataframes separados
   dataframes_rodadas = {}
 
@@ -3843,7 +3841,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
         ])
         
     )
-  
+  print(ultima_rodada)
   return informacoes_times
     
 # Interação com o usuário
