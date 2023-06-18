@@ -3629,7 +3629,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
           columns_partidas = ['Partidas', 'Rodada'] + [f"{coluna}_Prevista" for coluna in y.columns] + [f"{coluna}_Aconteceu" for coluna in y.columns]
 
       # Realiza as previsões para as partidas filtradas
-      previsoes = multi_target_rfc.predict(partidas_filtradas)
+      previsoes = multi_target_rfc1.predict(partidas_filtradas)
 
       # Preenche a lista de dados das partidas
       for partida, previsao in zip(partidas_filtradas_temp.index, previsoes):
