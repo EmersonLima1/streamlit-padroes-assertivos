@@ -3518,7 +3518,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
   data_alvo = datetime.strptime(data_alvo, '%Y-%m-%d').date()
 
   # Encontrar a última partida anterior à data alvo e obter a rodada correspondente
-  ultima_partida = df_partidas[df_partidas['data_partida'] < data_alvo].tail(1)
+  ultima_partida = df_partidas[df_partidas['data_partida'] <= data_alvo].tail(1)
   ultima_rodada = ultima_partida['rodada'].values[0]
 
   # Dicionário para armazenar os dataframes separados
