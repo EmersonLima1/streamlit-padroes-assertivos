@@ -3930,7 +3930,7 @@ def main():
                         tabela = tabela.drop(tabela.columns[-1], axis=1)
                         df_tabela, df_legenda, df_casa, df_fora, df_res, df_inf = estilizar_df(df_concatenado_time_casa, df_concatenado_time_fora, df_resultados_confrontos_diretos, df_info_confrontos_diretos, time_casa_widget, time_fora_widget, tabela, legenda)
                         _, df_novo = padroes_assertivos(partidas_df, data_da_partida, partidas_anteriores, multi_target_rfc, le, y_test)
-                        informacoes_times = times_acuracia(data_da_partida, time_casa_widget, time_fora_widget, partidas_df)
+                        informacoes_times = times_acuracia(data_widget, time_casa_widget, time_fora_widget, partidas_df)
                         
                         st.header('**Previsões para a partida**')
                         st.subheader(f"{time_casa_widget} x {time_fora_widget}")
@@ -3959,7 +3959,7 @@ def main():
                         tabela, legenda = gerar_tabela(time_casa_widget, time_fora_widget, arbitro_widget, multi_target_rfc, le, partidas_anteriores, acuracia)
                         df_tabela, df_legenda, df_casa, df_fora, df_res, df_inf = estilizar_df(df_concatenado_time_casa, df_concatenado_time_fora, df_resultados_confrontos_diretos, df_info_confrontos_diretos, time_casa_widget, time_fora_widget, tabela, legenda)
                         _, df_novo = padroes_assertivos(partidas_df, data_da_partida, partidas_anteriores, multi_target_rfc, le, y_test)
-                        informacoes_times = times_acuracia(data_da_partida, time_casa_widget, time_fora_widget, partidas_df)
+                        informacoes_times = times_acuracia(data_widget, time_casa_widget, time_fora_widget, partidas_df)
                         st.header('**Previsões para a partida**')
                         st.subheader(f"{time_casa_widget} x {time_fora_widget}")
                         st.write(f'**Árbitro: {arbitro_widget}**')
