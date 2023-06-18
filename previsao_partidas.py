@@ -3841,8 +3841,8 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
         ])
         
     )
-  print(ultima_rodada)
-  return informacoes_times
+  
+  return df_partidas
     
 # Interação com o usuário
 
