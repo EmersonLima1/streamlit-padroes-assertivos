@@ -3873,15 +3873,6 @@ def main():
         arbitro_widget = st.selectbox('**Árbitro:**', options=arbitros)
         data_widget = st.date_input('**Data da partida:**')
 
-        # Converta a data máxima do DataFrame para datetime.date
-        data_maxima = partidas_df['data'].max().date()
-
-        # Verifique se a data selecionada é maior que a data máxima no DataFrame
-        if data_widget > data_maxima:
-            data_da_partida = data_maxima.strftime("%Y-%m-%d")
-        else:
-            data_da_partida = data_widget.strftime("%Y-%m-%d")
-
         # Define as opções do multiselect
         opcoes = ['Padrão 1 - Confrontos diretos',
                   'Padrão 2 - Histórico do campeonato',
@@ -3909,11 +3900,21 @@ def main():
                 st.error('**O time visitante não pode ser o mesmo que o time mandante!**')
             else:
                 try:
+                    
+                    # Converta a data máxima do DataFrame para datetime.date
+                    data_maxima = partidas_df['data'].max().date()
+
+                    # Verifique se a data selecionada é maior que a data máxima no DataFrame
+                    if data_widget > data_maxima:
+                        data_da_partida = data_maxima.strftime("%Y-%m-%d")
+                    else:
+                        data_da_partida = data_widget.strftime("%Y-%m-%d")
+                    
                     # Converte a data para o formato desejado
                     #data_da_partida = data_widget.strftime("%Y-%m-%d")
 
                     # gerando um dataframe com todas as partidas antes da data passada
-                    partidas_anteriores = partidas_df[partidas_df['data'] <= data_da_partida]
+                    partidas_anteriores = partidas_df[partidas_df['data'] < data_da_partida]
 
                     # treinando o modelo
                     multi_target_rfc, le, y_test, y_pred, _ = modelo_ml(partidas_df, data_da_partida)
