@@ -3766,19 +3766,19 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
 
       return df_transformado
 
-  times = transformar_em_porcentagem(df_final)
+  times_acuracia = transformar_em_porcentagem(df_final)
 
   # Função para criar o novo dataframe com as informações dos times
-  def obter_informacoes_times(time_casa, time_fora, times):
+  def obter_informacoes_times(time_casa, time_fora, times_acuracia):
       # Filtrar as informações dos times de casa e fora
-      info_time_casa = times[times['Times'] == time_casa]
-      info_time_fora = times[times['Times'] == time_fora]
+      info_time_casa = times_acuracia[times_acuracia['Times'] == time_casa]
+      info_time_fora = times_acuracia[times_acuracia['Times'] == time_fora]
 
       # Criar o novo dataframe
       novo_dataframe = pd.DataFrame(columns=['Variáveis-alvo', f'Acurácia do {time_casa}', f'Acurácia do {time_fora}', 'Média das acurácias'])
 
       # Preencher as colunas do novo dataframe
-      novo_dataframe['Variáveis-alvo'] = times.columns[1:]
+      novo_dataframe['Variáveis-alvo'] = times_acuracia.columns[1:]
       novo_dataframe[f'Acurácia do {time_casa}'] = info_time_casa.values[0][1:]
       novo_dataframe[f'Acurácia do {time_fora}'] = info_time_fora.values[0][1:]
 
@@ -3790,7 +3790,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
 
       return novo_dataframe
 
-  informacoes_times = obter_informacoes_times(time_casa, time_fora, times)
+  informacoes_times = obter_informacoes_times(time_casa, time_fora, times_acuracia)
 
   # Função para extrair o que está entre parênteses
   def extrair_nome(valor):
@@ -3844,7 +3844,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
         
     )
   
-  return informacoes_times
+  return times_acuracia
     
 # Interação com o usuário
 
@@ -3869,10 +3869,10 @@ def main():
         arbitros = sorted(partidas_df['referee'].unique())
 
         num_partidas = 0
-        time_casa_widget = st.selectbox('**Time da casa:**', options=times_da_casa)
-        time_fora_widget = st.selectbox('**Time de fora:**', options=times_de_fora)
-        arbitro_widget = st.selectbox('**Árbitro:**', options=arbitros)
-        data_widget = st.date_input('**Data da partida:**')
+        time_casa_widget = st.selectbox('Time da casa:', options=times_da_casa)
+        time_fora_widget = st.selectbox('Time de fora:', options=times_de_fora)
+        arbitro_widget = st.selectbox('Árbitro:', options=arbitros)
+        data_widget = st.date_input('Data da partida:')
 
         # Converta a data máxima do DataFrame para datetime.date
         data_maxima = partidas_df['data'].max().date()
