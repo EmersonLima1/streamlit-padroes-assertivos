@@ -3874,13 +3874,14 @@ def main():
         data_widget = st.date_input('**Data da partida:**')
 
         # Converta a data máxima do DataFrame para datetime.date
-        data_maxima = partidas_df['data'].max().date()
+        #data_maxima = partidas_df['data'].max().date()
 
         # Verifique se a data selecionada é maior que a data máxima no DataFrame
-        if data_widget > data_maxima:
-            data_da_partida = data_maxima.strftime("%Y-%m-%d")
-        else:
-            data_da_partida = data_widget.strftime("%Y-%m-%d")
+        #if data_widget > data_maxima:
+        #    data_da_partida = data_maxima.strftime("%Y-%m-%d")
+        #else:
+        #    data_da_partida = data_widget.strftime("%Y-%m-%d")
+        data_da_partida = data_widget.strftime("%Y-%m-%d")
 
         # Define as opções do multiselect
         opcoes = ['Padrão 1 - Confrontos diretos',
