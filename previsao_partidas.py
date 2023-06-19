@@ -3582,7 +3582,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
   dataframes_rodadas = criar_dataframes_rodadas(dataframes_rodadas_codificados, ultima_rodada)
 
   # Inicializa o modelo RandomForestClassifier para previsão das partidas
-  rfc1 = RandomForestClassifier(n_estimators=150, max_depth=30, min_samples_split=5, min_samples_leaf=1, random_state=42)
+  rfc1 = RandomForestClassifier(n_estimators=100, max_depth=30, min_samples_split=5, min_samples_leaf=1, random_state=42)
   multi_target_rfc1 = MultiOutputClassifier(rfc1, n_jobs=-1)
 
   # PREVISÕES 
