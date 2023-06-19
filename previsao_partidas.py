@@ -1297,8 +1297,8 @@ def modelo_ml(partidas_df, data_da_partida):
   # Separando as colunas que representam o resultado da partida para testar o modelo
   y_test = partidas_proxima_rodada[['resultado_partida', 'resultado_intervalo', 'resultado_num_gols_over_under', 'resultado_ambas_equipes_marcaram','resultado_num_cartoes_amarelos','resultado_num_cartoes_vermelhos','resultado_num_cartoes_totais','resultado_ambas_equipes_receberam_cartoes','resultado_cartoes_ambos_tempos','resultado_num_escanteios','resultado_num_cartoes_primeiro', 'resultado_num_cartoes_segundo']]
 
-  # Define o classificador random forest com 100 estimadores, profundidade máxima de 10, divisão mínima de amostras de 2, folha mínima de amostras de 1, número máximo de features a considerar é 'auto' e semente aleatória de 42
-  rfc = RandomForestClassifier(n_estimators=100, max_depth=30, min_samples_split=5, min_samples_leaf=1, max_features='sqrt', random_state=42)
+  # Define o classificador random forest com 100 estimadores, profundidade máxima de 10, divisão mínima de amostras de 2, folha mínima de amostras de 1, número máximo de features a considerar é 'sqrt' e semente aleatória de 42
+  rfc = RandomForestClassifier(n_estimators=100, max_depth=30, min_samples_split=5, min_samples_leaf=1, random_state=42)
   multi_target_rfc = MultiOutputClassifier(rfc, n_jobs=-1)
   multi_target_rfc.fit(X_train, y_train)
 
@@ -3582,7 +3582,7 @@ def times_acuracia(data_alvo, time_casa, time_fora, partidas_df):
   dataframes_rodadas = criar_dataframes_rodadas(dataframes_rodadas_codificados, ultima_rodada)
 
   # Inicializa o modelo RandomForestClassifier para previsão das partidas
-  rfc1 = RandomForestClassifier(n_estimators=150, max_depth=30, min_samples_split=5, min_samples_leaf=1, max_features='sqrt', random_state=42)
+  rfc1 = RandomForestClassifier(n_estimators=150, max_depth=30, min_samples_split=5, min_samples_leaf=1, random_state=42)
   multi_target_rfc1 = MultiOutputClassifier(rfc1, n_jobs=-1)
 
   # PREVISÕES 
