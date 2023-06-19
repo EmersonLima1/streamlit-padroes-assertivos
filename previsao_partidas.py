@@ -262,7 +262,9 @@ def df_completo_partidas_casa_fora(partidas_df):
 
 def df_completo_partidas_gerais(partidas_df):
 
-  partidas_df['date_GMT'] = pd.to_datetime(partidas_df['date_GMT'])
+  #partidas_df['date_GMT'] = pd.to_datetime(partidas_df['date_GMT'])
+  #partidas_df['date_GMT'] = partidas_df['date_GMT'].dt.date
+  partidas_df['date_GMT'] = pd.to_datetime(partidas_df['date_GMT'], format="%b %d %Y - %I:%M%p")
   partidas_df['date_GMT'] = partidas_df['date_GMT'].dt.date
 
   # criar uma lista com todos os times presentes no dataset
@@ -3857,7 +3859,6 @@ def main():
 
     if arquivo is not None:
         partidas_df = pd.read_csv(arquivo)
-
         partidas_df['data'] =  pd.to_datetime(partidas_df['date_GMT'])
 
         # salvando os nomes dos times da casa em uma lista para futura verificação
