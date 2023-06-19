@@ -3861,17 +3861,26 @@ def main():
         partidas_df['data'] =  pd.to_datetime(partidas_df['date_GMT'])
 
         # salvando os nomes dos times da casa em uma lista para futura verificação
-        #times_da_casa = sorted(partidas_df['home_team_name'].unique())
+        times_da_casa = sorted(partidas_df['home_team_name'].unique())
         # salvando os nomes dos times de fora em uma lista para futura verificação
         times_de_fora = sorted(partidas_df['away_team_name'].unique())
         # salvando os nomes dos árbitros em uma lista para futura verificação
         arbitros = sorted(partidas_df['referee'].unique())
 
         num_partidas = 0
-        time_casa_widget = st.selectbox('**Time da casa:**', options=times_de_fora)
+        time_casa_widget = st.selectbox('**Time da casa:**', options=times_da_casa)
         time_fora_widget = st.selectbox('**Time de fora:**', options=times_de_fora)
         arbitro_widget = st.selectbox('**Árbitro:**', options=arbitros)
         data_widget = st.date_input('**Data da partida:**')
+
+        # Converta a data máxima do DataFrame para datetime.date
+        data_maxima = partidas_df['data'].max().date()
+
+        # Verifique se a data selecionada é maior que a data máxima no DataFrame
+        if data_widget > data_maxima.date():
+            data_da_partida = data_maxima.strftime("%Y-%m-%d")
+        else:
+            data_da_partida = data_widget.strftime("%Y-%m-%d")
 
         # Define as opções do multiselect
         opcoes = ['Padrão 1 - Confrontos diretos',
@@ -3900,15 +3909,6 @@ def main():
                 st.error('**O time visitante não pode ser o mesmo que o time mandante!**')
             else:
                 try:
-                    
-                    # Converta a data máxima do DataFrame para datetime.date
-                    data_maxima = partidas_df['data'].max().date()
-
-                    # Verifique se a data selecionada é maior que a data máxima no DataFrame
-                    if data_widget > data_maxima:
-                        data_da_partida = data_maxima.strftime("%Y-%m-%d")
-                    else:
-                        data_da_partida = data_widget.strftime("%Y-%m-%d")
                     
                     # Converte a data para o formato desejado
                     #data_da_partida = data_widget.strftime("%Y-%m-%d")
