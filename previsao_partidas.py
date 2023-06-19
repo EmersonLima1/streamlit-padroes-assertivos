@@ -3861,14 +3861,14 @@ def main():
         partidas_df['data'] =  pd.to_datetime(partidas_df['date_GMT'])
 
         # salvando os nomes dos times da casa em uma lista para futura verificação
-        times_da_casa = sorted(partidas_df['away_team_name'].unique())
+        #times_da_casa = sorted(partidas_df['home_team_name'].unique())
         # salvando os nomes dos times de fora em uma lista para futura verificação
         times_de_fora = sorted(partidas_df['away_team_name'].unique())
         # salvando os nomes dos árbitros em uma lista para futura verificação
         arbitros = sorted(partidas_df['referee'].unique())
 
         num_partidas = 0
-        time_casa_widget = st.selectbox('**Time da casa:**', options=times_da_casa)
+        time_casa_widget = st.selectbox('**Time da casa:**', options=times_de_fora)
         time_fora_widget = st.selectbox('**Time de fora:**', options=times_de_fora)
         arbitro_widget = st.selectbox('**Árbitro:**', options=arbitros)
         data_widget = st.date_input('**Data da partida:**')
