@@ -3877,10 +3877,15 @@ def main():
         data_maxima = partidas_df['data'].max().date()
 
         # Verifique se a data selecionada é maior que a data máxima no DataFrame
-        if data_widget > data_maxima.date():
+        if data_widget > data_maxima:
             data_da_partida = data_maxima.strftime("%Y-%m-%d")
         else:
             data_da_partida = data_widget.strftime("%Y-%m-%d")
+
+        st.write(time_casa_widget)
+        st.write(time_fora_widget)
+        st.write(data_widget)
+        st.write(data_maxima)
 
         # Define as opções do multiselect
         opcoes = ['Padrão 1 - Confrontos diretos',
@@ -3909,7 +3914,10 @@ def main():
                 st.error('**O time visitante não pode ser o mesmo que o time mandante!**')
             else:
                 try:
-                    
+                    st.write(time_casa_widget)
+                    st.write(time_fora_widget)
+                    st.write(data_widget)
+                    st.write(data_maxima)
                     # Converte a data para o formato desejado
                     #data_da_partida = data_widget.strftime("%Y-%m-%d")
 
