@@ -1,8 +1,8 @@
-pandas
+pandas==1.5.3
 scikit-learn==1.2.2
 tabulate
-numpy
+numpy==1.22.4
 datetime
 streamlit
 openpyxl
-python==3.9
+
