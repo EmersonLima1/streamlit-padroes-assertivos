@@ -5,4 +5,4 @@ numpy
 datetime
 streamlit
 openpyxl
-python==3.10.12
+python==3.9
